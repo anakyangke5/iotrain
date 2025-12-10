@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitoring Curah Hujan - Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .card {
+      background: rgba(0, 0, 0, 0.35);
+      padding: 30px;
+      border-radius: 20px;
+      width: 340px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .data-box {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 18px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+    }
+
+    .label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .value {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h1>🌧️ Monitoring Curah Hujan</h1>
+
+    <div class="data-box">
+      <div class="label">Jumlah Tipping</div>
+      <div class="value" id="tip">0</div>
+    </div>
+
+    <div class="data-box">
+      <div class="label">Curah Hujan</div>
+      <div class="value" id="rain">0 mm</div>
+    </div>
+
+    <div class="status" id="status">Menunggu data...</div>
+
+    <div class="footer">
+      Data realtime dari Firebase
+    </div>
+  </div>
+
+  <!-- ================= FIREBASE SDK ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // ✅ FIREBASE CONFIG YANG BENAR (REGION ASIA)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDe9W577rTNSZpL8v3rMI9iNGWehULcKz8",
+      authDomain: "iotesp-e752f.firebaseapp.com",
+      databaseURL: "https://iotesp-e752f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "iotesp-e752f",
+      storageBucket: "iotesp-e752f.firebasestorage.app",
+      messagingSenderId: "127033779842",
+      appId: "1:127033779842:web:7c62069dff5cc2f22ab69b"
+    };
+
+    // ✅ INIT FIREBASE
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ✅ AMBIL DATA DARI PATH YANG BENAR
+    const rainRef = ref(db, "rain");
+
+    onValue(rainRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const tipping = data.tipping || 0;
+        const mm = data.mm || 0;
+
+        document.getElementById("tip").innerText = tipping;
+        document.getElementById("rain").innerText = mm + " mm";
+
+        let status = "Tidak Hujan";
+        if (mm > 0 && mm <= 2) status = "🌦️ Gerimis";
+        else if (mm > 2 && mm <= 10) status = "🌧️ Hujan Sedang";
+        else if (mm > 10) status = "⛈️ Hujan Lebat";
+
+        document.getElementById("status").innerText = status;
+      }
+    });
+  </script>
+
+</body>
+</html>
